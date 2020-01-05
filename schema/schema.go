@@ -30,12 +30,10 @@ type Order struct {
 	Then *Order
 }
 
-type Predicate struct {
-	Name  string
-	Value interface{}
-}
+// Field is a tuple of [key, value]
+type Field [2]interface{}
 
-type Node []Predicate
+type Node []Field
 
 type QueryArgs struct {
 	Filter *Filter

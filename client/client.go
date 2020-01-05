@@ -3,7 +3,6 @@ package client
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/dgraph-io/dgo/v2"
 	"github.com/dgraph-io/dgo/v2/protos/api"
@@ -15,7 +14,7 @@ type Client struct {
 	conn       *grpc.ClientConn
 	d          *dgo.Dgraph
 	s          *schema.Schema
-	predicates []predicate
+	Predicates map[string]Predicate
 }
 
 func (c *Client) Close() {
@@ -40,7 +39,7 @@ func NewClient(ctx context.Context, opt ClientOptions) (*Client, error) {
 	return c, c.initialize(ctx)
 }
 
-type predicate struct {
+type Predicate struct {
 	Name       string   `json:"predicate"`
 	Type       string   `json:"type"`
 	IsList     bool     `json:"list"`
@@ -53,7 +52,7 @@ var omitPredicateNames = map[string]struct{}{
 }
 
 type sch struct {
-	Predicates []predicate `json:"schema"`
+	Predicates []Predicate `json:"schema"`
 }
 
 func (c *Client) initialize(ctx context.Context) error {
@@ -68,12 +67,11 @@ func (c *Client) initialize(ctx context.Context) error {
 		return err
 	}
 
-	c.predicates = s.Predicates
-	fmt.Printf("%+v\n", s.Predicates)
+	c.Predicates = map[string]Predicate{}
 
-	// preds := toPredicates(s.Predicates)
-
-	// c.s = schema.BuildSchema(preds)
+	for _, pred := range s.Predicates {
+		c.Predicates[pred.Name] = pred
+	}
 
 	return nil
 }

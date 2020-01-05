@@ -14,16 +14,28 @@ type query struct {
 	c *client.Client
 }
 
-func (q query) Nodes(ctx context.Context, args schema.QueryArgs) ([]schema.Node, error) {
-	fmt.Printf("%+v", fields)
+type result struct {
+	Nodes []map[string]interface{}
+}
 
-	var result map[string]interface{}
-	err := q.c.Query(ctx, "", &result)
+func (q query) Nodes(ctx context.Context, args schema.QueryArgs) ([]schema.Node, error) {
+	var r result
+	err := q.c.Query(ctx, "{ nodes (func: has(name)) { uid name friend { uid name } } }", &r)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Printf("result => %+v", result)
+	for _, node := range r.Nodes {
+		for field := range node {
+			fmt.Printf("%+v %+v %+v\n", field, q.c.Predicates[field], node[field])
+
+		}
+
+		if v, ok := node["friend"]; ok {
+			b_temp := v.([]interface{})
+			fmt.Printf("%+v\n", b_temp)
+		}
+	}
 
 	// https://stackoverflow.com/questions/42152750/golang-is-there-an-easy-way-to-unmarshal-arbitrary-complex-json
 
