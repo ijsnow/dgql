@@ -2,38 +2,49 @@ package schema
 
 import (
 	"context"
+
+	"github.com/vektah/gqlparser/ast"
 )
 
 type StringTermFilter struct {
-	Equals     *string
+	Name       string
 	AllOfTerms *string
 	AnyOfTerms *string
 }
 
 type UID string
 
-type Filter struct {
-	UIDs *[]UID
-	Name *StringTermFilter
-	And  *Filter
-	Or   *Filter
-	Not  *Filter
+func (u UID) String() string {
+	return string(u)
 }
 
-type Orderable struct {
-	By string
+func UIDsToStrings(uids []UID) []string {
+	out := make([]string, len(uids))
+	for idx, uid := range uids {
+		out[idx] = uid.String()
+	}
+	return out
+}
+
+type Filter struct {
+	UIDs   *[]UID
+	String *StringTermFilter
+	And    *Filter
+	// Or     *Filter
+	// Not    *Filter
 }
 
 type Order struct {
-	Asc  *Orderable
-	Desc *Orderable
-	Then *Order
+	Asc  *string
+	Desc *string
+	// Then *Order
 }
 
-// Field is a tuple of [key, value]
-type Field [2]interface{}
+type Node map[string]interface{}
 
-type Node []Field
+func (n Node) SetField(field string, value interface{}) {
+	n[field] = value
+}
 
 type QueryArgs struct {
 	Filter *Filter
@@ -43,7 +54,7 @@ type QueryArgs struct {
 }
 
 type Query interface {
-	Nodes(context.Context, QueryArgs) ([]Node, error)
+	Nodes(context.Context, *ast.QueryDocument, QueryArgs) ([]Node, error)
 }
 
 type MutationResult struct {

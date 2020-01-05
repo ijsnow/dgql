@@ -7,9 +7,11 @@ require (
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/graphql-go/graphql v0.7.8 // indirect
+	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/rakyll/statik v0.1.6 // indirect
 	github.com/samsarahq/go v0.0.0-20191220233105-8077c9fbaed5 // indirect
 	github.com/samsarahq/thunder v0.5.0
+	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/vektah/gqlparser v1.2.0
 	google.golang.org/grpc v1.26.0
 )
