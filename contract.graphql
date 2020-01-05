@@ -1,0 +1,48 @@
+type StringTermFilter {
+  allofterms: String
+  anyofterms: String
+}
+
+type Filter {
+  uids: [UID!]
+  name: StringTermFilter
+  and: Filter
+  or: Filter
+  not: Filter
+}
+
+type Oderable {
+  by: String!
+}
+
+type Order {
+  asc: Orderable
+  desc: Orderable
+  then: Order
+}
+
+type Node {
+  uid: UID!
+  # ... dynamic fields
+}
+
+union Predicate = String | Number | NodeInput | [String] | [Number] | [NodeInput]
+
+input NodeInput {
+  uid: UID!
+  [predicate]: Predicate
+}
+
+type Query {
+  nodes(filter: Filter, order: Order, first: Int, offset: Int) [Node!]!
+}
+
+type MutationResult {
+  uids: [UID!]!
+}
+
+type Mutation {
+  add(input: [NodeInput!]!): MutationResult!
+  update(filter: Filter!, patch: NodeInput!): MutationResult!
+  delete(filter: Filter!): MutationResult!
+}
