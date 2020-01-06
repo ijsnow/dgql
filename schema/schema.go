@@ -2,8 +2,6 @@ package schema
 
 import (
 	"context"
-
-	"github.com/vektah/gqlparser/ast"
 )
 
 type StringTermFilter struct {
@@ -54,7 +52,7 @@ type QueryArgs struct {
 }
 
 type Query interface {
-	Nodes(context.Context, *ast.QueryDocument, QueryArgs) ([]Node, error)
+	Nodes(context.Context, string, QueryArgs) ([]Node, error)
 }
 
 type MutationResult struct {
@@ -67,7 +65,7 @@ type Mutation interface {
 	Delete(context.Context, Filter) (*MutationResult, error)
 }
 
-type Schema struct {
-	Query    Query
-	Mutation Mutation
+type Schema interface {
+	Query() Query
+	Mutation() Mutation
 }

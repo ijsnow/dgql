@@ -2,66 +2,124 @@ package dgql
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"gitlab.com/jago-eng/dgql/client"
 	"gitlab.com/jago-eng/dgql/schema"
 )
 
-func TestQuery(t *testing.T) {
+func TestAddAndQuery(t *testing.T) {
 	ctx := context.Background()
 	client, err := client.NewClient(ctx, client.ClientOptions{"localhost:9080"})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	q := query{
+	s := Schema{
 		c: client,
 	}
 
-	if _, err := q.Nodes(ctx, schema.QueryArgs{}); err != nil {
-		fmt.Errorf("unexpected error: %v", err)
+	nodes := []schema.Node{
+		schema.Node{
+			"name": "Isaac Snow",
+			"age":  25,
+			"friend": []schema.Node{
+				schema.Node{
+					"name": "Luci",
+					"age":  26,
+				},
+			},
+		},
 	}
-}
 
-/*
-func TestToNode(t *testing.T) {
-	predicates := []client.Predicate{
-		client.Predicate{
-			Name: "UID",
-			Type: "uid",
+	mres, err := s.Add(ctx, nodes)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(mres.UIDs) != 2 {
+		t.Fatalf("expected %d uids, got %v", 2, len(mres.UIDs))
+	}
+
+	qs := `query QueryNodes($filter: Filter) {
+		nodes(filter: $filter) {
+			uid
+			name
+			age
+			friend {
+				uid
+				name
+				age
+			}
+		}
+	}`
+
+	qres, err := s.Nodes(ctx, qs, schema.QueryArgs{
+		Filter: &schema.Filter{
+			UIDs: &mres.UIDs,
 		},
-		client.Predicate{
-			Name: "String",
-			Type: "string",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(qres) != 2 {
+		t.Fatalf("expected %d nodes, got %v", 2, len(mres.UIDs))
+	}
+
+	ures, err := s.Update(ctx, schema.Filter{UIDs: &mres.UIDs}, schema.Node{
+		"name": "updates",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	qs = `query QueryNodes($filter: Filter) {
+		nodes(filter: $filter) {
+			uid
+			name
+		}
+	}`
+
+	qres, err = s.Nodes(ctx, qs, schema.QueryArgs{
+		Filter: &schema.Filter{
+			UIDs: &ures.UIDs,
 		},
-		client.Predicate{
-			Name: "Int",
-			Type: "int",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, node := range qres {
+		if node["name"] != "test" {
+			t.Errorf("updated did not work; expected node.name to be `test`, got `%v`", node["name"])
+		}
+	}
+
+	dres, err := s.Delete(ctx, schema.Filter{UIDs: &mres.UIDs})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	qs = `query QueryNodes($filter: Filter) {
+		nodes(filter: $filter) {
+			uid
+			name
+		}
+	}`
+
+	qres, err = s.Nodes(ctx, qs, schema.QueryArgs{
+		Filter: &schema.Filter{
+			UIDs: &dres.UIDs,
 		},
-		client.Predicate{
-			Name: "Float",
-			Type: "float",
-		},
-		client.Predicate{
-			Name: "DateTime",
-			Type: "dateTime",
-		},
-		client.Predicate{
-			Name: "Password",
-			Type: "password",
-		},
-		client.Predicate{
-			Name:   "ListOfString",
-			Type:   "string",
-			IsList: true,
-		},
-		client.Predicate{
-			Name:   "Children",
-			Type:   "uid",
-			IsList: true,
-		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, node := range qres {
+		if len(node) > 1 {
+			t.Errorf("expected to get no fields, got %+v", node)
+		}
 	}
 }
-*/

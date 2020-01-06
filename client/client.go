@@ -3,9 +3,11 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"log"
 
 	"github.com/dgraph-io/dgo/v2"
 	"github.com/dgraph-io/dgo/v2/protos/api"
+	"gitlab.com/jago-eng/dgql/query"
 	"gitlab.com/jago-eng/dgql/schema"
 	"google.golang.org/grpc"
 )
@@ -76,14 +78,124 @@ func (c *Client) initialize(ctx context.Context) error {
 	return nil
 }
 
-func (c *Client) Query(ctx context.Context, query string, target interface{}) error {
+type result struct {
+	Nodes []schema.Node `json:"nodes"`
+}
+
+func (c *Client) Query(ctx context.Context, qs string, args schema.QueryArgs) ([]schema.Node, error) {
+	qb, err := query.FromSource(qs, args)
+	if err != nil {
+		return nil, err
+	}
+
 	txn := c.d.NewTxn()
 	defer txn.Discard(ctx)
 
-	res, err := txn.Query(ctx, query)
+	res, err := txn.Query(ctx, string(qb))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return json.Unmarshal(res.Json, target)
+	var r result
+	err = json.Unmarshal(res.Json, &r)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.Nodes, nil
+}
+
+func (c *Client) Add(ctx context.Context, nodes []schema.Node) (*schema.MutationResult, error) {
+	txn := c.d.NewTxn()
+	defer txn.Discard(ctx)
+
+	pb, err := json.Marshal(nodes)
+	if err != nil {
+		return nil, err
+	}
+
+	mu := &api.Mutation{
+		SetJson: pb,
+	}
+	req := &api.Request{CommitNow: true, Mutations: []*api.Mutation{mu}}
+	res, err := txn.Do(ctx, req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	uids := []schema.UID{}
+	for _, uid := range res.GetUids() {
+		uids = append(uids, schema.UID(uid))
+	}
+
+	return &schema.MutationResult{
+		UIDs: uids,
+	}, nil
+}
+
+func (c *Client) Update(ctx context.Context, filter schema.Filter, patch schema.Node) (*schema.MutationResult, error) {
+	vq := query.BuildVarQuery(filter)
+	patch["uid"] = "uid(node)"
+
+	pb, err := json.Marshal(patch)
+	if err != nil {
+		return nil, err
+	}
+
+	mu := &api.Mutation{
+		SetJson: pb,
+	}
+
+	req := &api.Request{
+		Query:     vq.String(),
+		Mutations: []*api.Mutation{mu},
+		CommitNow: true,
+	}
+
+	txn := c.d.NewTxn()
+	defer txn.Discard(ctx)
+
+	res, err := txn.Do(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	uids := []schema.UID{}
+	for _, uid := range res.GetUids() {
+		uids = append(uids, schema.UID(uid))
+	}
+
+	return &schema.MutationResult{
+		UIDs: uids,
+	}, nil
+}
+
+func (c *Client) Delete(ctx context.Context, filter schema.Filter) (*schema.MutationResult, error) {
+	txn := c.d.NewTxn()
+	defer txn.Discard(ctx)
+
+	vq := query.BuildVarQuery(filter)
+
+	mu := &api.Mutation{}
+	dgo.DeleteEdges(mu, "uid(node)", "*")
+
+	req := &api.Request{
+		Query:     vq.String(),
+		Mutations: []*api.Mutation{mu},
+		CommitNow: true,
+	}
+
+	res, err := txn.Do(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	uids := []schema.UID{}
+	for _, uid := range res.GetUids() {
+		uids = append(uids, schema.UID(uid))
+	}
+
+	return &schema.MutationResult{
+		UIDs: uids,
+	}, nil
 }

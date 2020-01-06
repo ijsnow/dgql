@@ -12,6 +12,11 @@ import (
 )
 
 type Query string
+
+func (q Query) String() string {
+	return string(q)
+}
+
 type QueryVars map[string]interface{}
 
 func FromSource(in string, args schema.QueryArgs) (Query, error) {
@@ -45,6 +50,24 @@ func write(doc *ast.QueryDocument, args schema.QueryArgs) (string, error) {
 	qb.pop()
 
 	return sb.String(), nil
+}
+
+func BuildVarQuery(filter schema.Filter) Query {
+	var sb strings.Builder
+	qb := queryBuilder{
+		sb:     &sb,
+		levels: 0,
+	}
+
+	qb.write("query ")
+	qb.push()
+	qb.leftPad()
+	qb.write("node as var(func: ")
+	qb.writeFilters(filter)
+	qb.write(")")
+	qb.pop()
+
+	return Query(sb.String())
 }
 
 var specialFields = map[string]struct{}{
@@ -134,22 +157,31 @@ func (qb *queryBuilder) writeSelectionSet(sset ast.SelectionSet) error {
 	return nil
 }
 
-/*
-	type Filter struct {
-		UIDs *[]UID
-		Name *StringTermFilter
-		And  *Filter
-		Or   *Filter
-		Not  *Filter
+func (qb *queryBuilder) writeFilters(filter schema.Filter) {
+	if filter.UIDs != nil {
+		qb.write("uid(")
+		qb.write(strings.Join(schema.UIDsToStrings(*filter.UIDs), ", "))
+		qb.writeR(')')
 	}
 
-	type QueryArgs struct {
-		Filter *Filter
-		Order  *Order
-		First  *int
-		Offset *int
+	if filter.String != nil {
+		if filter.String.AnyOfTerms != nil {
+			qb.write("anyofterms(")
+			qb.write(filter.String.Name)
+			qb.write(`, "`)
+			qb.write(*filter.String.AnyOfTerms)
+			qb.write(`")`)
+		}
+
+		if filter.String.AllOfTerms != nil {
+			qb.write("allofterms(")
+			qb.write(filter.String.Name)
+			qb.write(`, "`)
+			qb.write(*filter.String.AllOfTerms)
+			qb.write(`")`)
+		}
 	}
-*/
+}
 
 func (qb *queryBuilder) writeQueryArgs(sset ast.SelectionSet) error {
 	hasWritten := false
@@ -158,31 +190,8 @@ func (qb *queryBuilder) writeQueryArgs(sset ast.SelectionSet) error {
 
 	if qb.args.Filter != nil {
 		hasWritten = true
-		if qb.args.Filter.UIDs != nil {
-			qb.write("uid(")
-			qb.write(strings.Join(schema.UIDsToStrings(*qb.args.Filter.UIDs), ", "))
-			qb.writeR(')')
-		}
 
-		if qb.args.Filter.String != nil {
-			filter := qb.args.Filter.String
-
-			if filter.AnyOfTerms != nil {
-				qb.write("anyofterms(")
-				qb.write(filter.Name)
-				qb.write(`, "`)
-				qb.write(*filter.AnyOfTerms)
-				qb.write(`")`)
-			}
-
-			if filter.AllOfTerms != nil {
-				qb.write("allofterms(")
-				qb.write(filter.Name)
-				qb.write(`, "`)
-				qb.write(*filter.AllOfTerms)
-				qb.write(`")`)
-			}
-		}
+		qb.writeFilters(*qb.args.Filter)
 	}
 
 	if !hasWritten && sset != nil {

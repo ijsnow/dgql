@@ -172,25 +172,6 @@ func TestFromSource(t *testing.T) {
 				},
 			},
 		},
-		{
-			q: `query QueryNodes($filter: Filter) {
-	nodes(filter: $filter) {
-		uid
-		name
-	}
-}`,
-			want: `{
-	nodes(func: has(name), orderdesc: name) {
-		uid
-		name
-	}
-}`,
-			args: schema.QueryArgs{
-				Order: &schema.Order{
-					Desc: strPtr("name"),
-				},
-			},
-		},
 	}
 
 	for _, tc := range tests {
@@ -202,6 +183,30 @@ func TestFromSource(t *testing.T) {
 
 		if string(got) != tc.want {
 			t.Errorf("unexpected result\nq: `%s`\ngot: `%s`\nwant: `%s`", tc.q, got, tc.want)
+		}
+	}
+}
+
+func TestBuildVarQuery(t *testing.T) {
+	tests := []struct {
+		want   string
+		filter schema.Filter
+	}{
+		{
+			want: `query {
+	node as var(func: uid(0x1, 0x2))
+}`,
+			filter: schema.Filter{
+				UIDs: toUIDSlcPtr([]string{"0x1", "0x2"}),
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		got := BuildVarQuery(tc.filter)
+
+		if string(got) != tc.want {
+			t.Errorf("unexpected result\ngot: `%s`\nwant: `%s`", got, tc.want)
 		}
 	}
 }
