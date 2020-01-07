@@ -85,7 +85,7 @@ func TestParseArgs(t *testing.T) {
 			continue
 		}
 
-		got, err := parseArgs(doc.Operations[0].VariableDefinitions, tc.args)
+		got, err := parseQueryArgs(doc.Operations[0].VariableDefinitions, tc.args)
 		if err != nil {
 			t.Error(err)
 			continue

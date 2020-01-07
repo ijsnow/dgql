@@ -12,7 +12,7 @@ var nodeArgs = map[string]struct{}{
 	"order":  struct{}{},
 }
 
-func parseArgs(defs ast.VariableDefinitionList, args Node) (*QueryArgs, error) {
+func parseQueryArgs(defs ast.VariableDefinitionList, args Node) (*QueryArgs, error) {
 	var err error
 	qa := QueryArgs{}
 

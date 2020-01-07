@@ -1,5 +1,17 @@
 package schema
 
+import (
+	"fmt"
+
+	"github.com/vektah/gqlparser/ast"
+	"github.com/vektah/gqlparser/parser"
+)
+
+type ExecutionArgs struct {
+	Source string
+	Args   Node
+}
+
 type ExecutionResult struct {
 	Data struct {
 		Nodes []Node `json:"nodes"`
@@ -7,16 +19,23 @@ type ExecutionResult struct {
 	Errors []error `json:"errors,omitempty"`
 }
 
-//func (Schema) Execute(source string, vars Node) (*ExecutionResult, error) {
-//_, err := parser.ParseQuery(&ast.Source{
-//Name:  "query.graphql",
-//Input: source,
-//})
-//if err != nil {
-//return nil, err
-//}
+func Execute(schema Schema, args ExecutionArgs) (*ExecutionResult, error) {
+	doc, err := parser.ParseQuery(&ast.Source{
+		Name:  "query.graphql",
+		Input: args.Source,
+	})
+	if err != nil {
+		return nil, err
+	}
 
-//fmt.Printf("%+v %+v\n", source, vars)
+	for _, op := range doc.Operations[:1] { // Only support one operation for now
+		qa, err := parseQueryArgs(op.VariableDefinitions, args.Args)
+		if err != nil {
+			return nil, err
+		}
 
-//return nil, nil
-//}
+		fmt.Printf("%+v %+v\n", args.Source, qa)
+	}
+
+	return nil, nil
+}
