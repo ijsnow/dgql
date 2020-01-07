@@ -4,16 +4,24 @@ import (
 	"context"
 )
 
-type StringTermFilter struct {
-	Name       string
-	AllOfTerms *string
-	AnyOfTerms *string
+type TermFilter struct {
+	Name string
+	All  *string
+	Any  *string
 }
 
 type UID string
 
 func (u UID) String() string {
 	return string(u)
+}
+
+func StringsToUIDs(uids []string) []UID {
+	out := make([]UID, len(uids))
+	for idx, uid := range uids {
+		out[idx] = UID(uid)
+	}
+	return out
 }
 
 func UIDsToStrings(uids []UID) []string {
@@ -25,9 +33,9 @@ func UIDsToStrings(uids []UID) []string {
 }
 
 type Filter struct {
-	UIDs   *[]UID
-	String *StringTermFilter
-	And    *Filter
+	UIDs *[]UID
+	Term *TermFilter
+	// And    *Filter
 	// Or     *Filter
 	// Not    *Filter
 }

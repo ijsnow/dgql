@@ -74,6 +74,11 @@ var specialFields = map[string]struct{}{
 	"uid": struct{}{},
 }
 
+func isSpecial(field string) bool {
+	_, ok := specialFields[field]
+	return ok
+}
+
 type queryBuilder struct {
 	sb     *strings.Builder
 	levels int
@@ -164,20 +169,20 @@ func (qb *queryBuilder) writeFilters(filter schema.Filter) {
 		qb.writeR(')')
 	}
 
-	if filter.String != nil {
-		if filter.String.AnyOfTerms != nil {
+	if filter.Term != nil {
+		if filter.Term.Any != nil {
 			qb.write("anyofterms(")
-			qb.write(filter.String.Name)
+			qb.write(filter.Term.Name)
 			qb.write(`, "`)
-			qb.write(*filter.String.AnyOfTerms)
+			qb.write(*filter.Term.Any)
 			qb.write(`")`)
 		}
 
-		if filter.String.AllOfTerms != nil {
+		if filter.Term.All != nil {
 			qb.write("allofterms(")
-			qb.write(filter.String.Name)
+			qb.write(filter.Term.Name)
 			qb.write(`, "`)
-			qb.write(*filter.String.AllOfTerms)
+			qb.write(*filter.Term.All)
 			qb.write(`")`)
 		}
 	}
@@ -203,7 +208,7 @@ func (qb *queryBuilder) writeQueryArgs(sset ast.SelectionSet) error {
 				return errors.New("unable to convert selection to field")
 			}
 
-			if _, ok := specialFields[field.Name]; ok {
+			if isSpecial(field.Name) {
 				continue
 			}
 

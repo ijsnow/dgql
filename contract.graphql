@@ -1,11 +1,11 @@
-type StringTermFilter {
+type TermFilter {
   allofterms: String
   anyofterms: String
 }
 
 type Filter {
   uids: [UID!]
-  name: StringTermFilter
+  name: TermFilter
   and: Filter
   or: Filter
   not: Filter

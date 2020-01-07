@@ -1,0 +1,14 @@
+title = 'Create execute func'
+status = 'Open'
+id = '4ad80c80-303e-11ea-bc07-4fab0f0e52e1'
+assignees = []
+description = '''
+Create an `Execute` function that takes in a query and variables. It needs to do the following
+
+- [ ] Parse variables into structs from schema package
+- [ ] Parse query and determine operations
+- [ ] Execute operations
+'''
+version = 'V1'
+
+[comments]

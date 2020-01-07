@@ -87,9 +87,9 @@ func TestFromSource(t *testing.T) {
 }`,
 			args: schema.QueryArgs{
 				Filter: &schema.Filter{
-					String: &schema.StringTermFilter{
-						Name:       "name",
-						AnyOfTerms: strPtr("test"),
+					Term: &schema.TermFilter{
+						Name: "name",
+						Any:  strPtr("test"),
 					},
 				},
 			},
@@ -109,9 +109,9 @@ func TestFromSource(t *testing.T) {
 }`,
 			args: schema.QueryArgs{
 				Filter: &schema.Filter{
-					String: &schema.StringTermFilter{
-						Name:       "name",
-						AllOfTerms: strPtr("test"),
+					Term: &schema.TermFilter{
+						Name: "name",
+						All:  strPtr("test"),
 					},
 				},
 			},

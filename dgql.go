@@ -11,6 +11,15 @@ type Schema struct {
 	c *client.Client
 }
 
+func NewSchema(ctx context.Context, opt client.ClientOptions) (*Schema, error) {
+	c, err := client.NewClient(ctx, opt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Schema{c}, err
+}
+
 // https://stackoverflow.com/questions/42152750/golang-is-there-an-easy-way-to-unmarshal-arbitrary-complex-json
 
 func (s *Schema) Query() schema.Query {
