@@ -1,7 +1,8 @@
-package api
+package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/ijsnow/dgql/dgql"
@@ -9,7 +10,7 @@ import (
 	"github.com/ijsnow/dgql/dgql/schema"
 )
 
-func Handler(w http.ResponseWriter, r *http.Request) {
+func handler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	s, err := dgql.NewSchema(ctx, client.ClientOptions{"play.dgraph.io"})
@@ -39,4 +40,9 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(body)
+}
+
+func main() {
+	http.HandlerFunc(handler)
+	log.Fatal(http.ListenAndServe(":3333", nil))
 }
