@@ -9,8 +9,8 @@ import (
 )
 
 type ExecutionArgs struct {
-	Source string
-	Args   Node
+	Source string `json:"query"`
+	Args   Node   `json:"variables"`
 }
 
 type ResultData struct {

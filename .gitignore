@@ -1,0 +1,6 @@
+node_modules
+.data
+.next
+.now
+yarn-error.log
+1million.rdf.gz

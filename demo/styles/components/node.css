@@ -1,0 +1,15 @@
+.node {
+  @apply .w-full .text-left .table-collapse;
+}
+
+.node__th {
+  @apply .text-sm .font-semibold .text-gray-700 .p-2 .bg-gray-100;
+}
+
+.node_td-primary {
+  @apply .p-2 .border-t .border-gray-300 .font-mono .text-xs .text-purple-700 .whitespace-no-wrap;
+}
+
+.node_td-secondary {
+  @apply .p-2 .border-t .border-gray-300 .font-mono .text-xs .text-purple-700 .whitespace-pre;
+}

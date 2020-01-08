@@ -1,0 +1,6 @@
+{
+  "extends": "./node_modules/@jago-eng/tsconfig-server/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "./"
+  }
+}

@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/vektah/gqlparser/ast"
-	"gitlab.com/jago-eng/dgql/client"
-	"gitlab.com/jago-eng/dgql/schema"
+	"github.com/ijsnow/dgql/dgql/client"
+	"github.com/ijsnow/dgql/dgql/schema"
 )
 
 type Schema struct {

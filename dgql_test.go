@@ -6,8 +6,8 @@ import (
 
 	"github.com/vektah/gqlparser/ast"
 	"github.com/vektah/gqlparser/parser"
-	"gitlab.com/jago-eng/dgql/client"
-	"gitlab.com/jago-eng/dgql/schema"
+	"github.com/ijsnow/dgql/dgql/client"
+	"github.com/ijsnow/dgql/dgql/schema"
 )
 
 func TestAddAndQuery(t *testing.T) {

@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@import "./components/node.css";
+@import "./components/search.css";
+@tailwind utilities;
+
+body {
+  @apply .font-sans;
+}

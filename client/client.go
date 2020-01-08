@@ -8,8 +8,8 @@ import (
 	"github.com/dgraph-io/dgo/v2"
 	"github.com/dgraph-io/dgo/v2/protos/api"
 	"github.com/vektah/gqlparser/ast"
-	"gitlab.com/jago-eng/dgql/query"
-	"gitlab.com/jago-eng/dgql/schema"
+	"github.com/ijsnow/dgql/dgql/query"
+	"github.com/ijsnow/dgql/dgql/schema"
 	"google.golang.org/grpc"
 )
 
