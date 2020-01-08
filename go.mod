@@ -8,9 +8,3 @@ require (
 	github.com/vektah/gqlparser v1.2.1
 	google.golang.org/grpc v1.26.0
 )
-
-replace github.com/ijsnow/dgql/dgql/client => ./client
-
-replace github.com/ijsnow/dgql/dgql/schema => ./schema
-
-replace github.com/ijsnow/dgql/dgql/query => ./query
