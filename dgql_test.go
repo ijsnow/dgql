@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/vektah/gqlparser/ast"
+	"github.com/vektah/gqlparser/parser"
 	"gitlab.com/jago-eng/dgql/client"
 	"gitlab.com/jago-eng/dgql/schema"
 )
@@ -32,7 +34,7 @@ func TestAddAndQuery(t *testing.T) {
 		},
 	}
 
-	mres, err := s.Add(ctx, nodes)
+	mres, err := s.Add(ctx, schema.Args{Nodes: nodes})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,8 +55,12 @@ func TestAddAndQuery(t *testing.T) {
 			}
 		}
 	}`
+	doc, _ := parser.ParseQuery(&ast.Source{
+		Name:  "doesnt matter",
+		Input: qs,
+	})
 
-	qres, err := s.Nodes(ctx, qs, schema.QueryArgs{
+	qres, err := s.Nodes(ctx, *doc, schema.Args{
 		Filter: &schema.Filter{
 			UIDs: &mres.UIDs,
 		},
@@ -67,8 +73,11 @@ func TestAddAndQuery(t *testing.T) {
 		t.Fatalf("expected %d nodes, got %v", 2, len(mres.UIDs))
 	}
 
-	ures, err := s.Update(ctx, schema.Filter{UIDs: &mres.UIDs}, schema.Node{
-		"name": "updates",
+	ures, err := s.Update(ctx, schema.Args{
+		Filter: &schema.Filter{UIDs: &mres.UIDs},
+		Patch: &schema.Node{
+			"name": "updates",
+		},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -80,8 +89,12 @@ func TestAddAndQuery(t *testing.T) {
 			name
 		}
 	}`
+	doc, _ = parser.ParseQuery(&ast.Source{
+		Name:  "doesnt matter",
+		Input: qs,
+	})
 
-	qres, err = s.Nodes(ctx, qs, schema.QueryArgs{
+	qres, err = s.Nodes(ctx, *doc, schema.Args{
 		Filter: &schema.Filter{
 			UIDs: &ures.UIDs,
 		},
@@ -96,7 +109,9 @@ func TestAddAndQuery(t *testing.T) {
 		}
 	}
 
-	dres, err := s.Delete(ctx, schema.Filter{UIDs: &mres.UIDs})
+	dres, err := s.Delete(ctx, schema.Args{
+		Filter: &schema.Filter{UIDs: &mres.UIDs},
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -107,8 +122,12 @@ func TestAddAndQuery(t *testing.T) {
 			name
 		}
 	}`
+	doc, _ = parser.ParseQuery(&ast.Source{
+		Name:  "doesnt matter",
+		Input: qs,
+	})
 
-	qres, err = s.Nodes(ctx, qs, schema.QueryArgs{
+	qres, err = s.Nodes(ctx, *doc, schema.Args{
 		Filter: &schema.Filter{
 			UIDs: &dres.UIDs,
 		},

@@ -7,6 +7,7 @@ import (
 
 	"github.com/dgraph-io/dgo/v2"
 	"github.com/dgraph-io/dgo/v2/protos/api"
+	"github.com/vektah/gqlparser/ast"
 	"gitlab.com/jago-eng/dgql/query"
 	"gitlab.com/jago-eng/dgql/schema"
 	"google.golang.org/grpc"
@@ -82,8 +83,8 @@ type result struct {
 	Nodes []schema.Node `json:"nodes"`
 }
 
-func (c *Client) Query(ctx context.Context, qs string, args schema.QueryArgs) ([]schema.Node, error) {
-	qb, err := query.FromSource(qs, args)
+func (c *Client) Query(ctx context.Context, doc ast.QueryDocument, args schema.Args) ([]schema.Node, error) {
+	qb, err := query.FromSource(&doc, args)
 	if err != nil {
 		return nil, err
 	}
@@ -105,11 +106,11 @@ func (c *Client) Query(ctx context.Context, qs string, args schema.QueryArgs) ([
 	return r.Nodes, nil
 }
 
-func (c *Client) Add(ctx context.Context, nodes []schema.Node) (*schema.MutationResult, error) {
+func (c *Client) Add(ctx context.Context, args schema.Args) (*schema.MutationResult, error) {
 	txn := c.d.NewTxn()
 	defer txn.Discard(ctx)
 
-	pb, err := json.Marshal(nodes)
+	pb, err := json.Marshal(args.Nodes)
 	if err != nil {
 		return nil, err
 	}
@@ -133,8 +134,10 @@ func (c *Client) Add(ctx context.Context, nodes []schema.Node) (*schema.Mutation
 	}, nil
 }
 
-func (c *Client) Update(ctx context.Context, filter schema.Filter, patch schema.Node) (*schema.MutationResult, error) {
-	vq := query.BuildVarQuery(filter)
+func (c *Client) Update(ctx context.Context, args schema.Args) (*schema.MutationResult, error) {
+	vq := query.BuildVarQuery(*args.Filter)
+
+	patch := *args.Patch
 	patch["uid"] = "uid(node)"
 
 	pb, err := json.Marshal(patch)
@@ -170,11 +173,11 @@ func (c *Client) Update(ctx context.Context, filter schema.Filter, patch schema.
 	}, nil
 }
 
-func (c *Client) Delete(ctx context.Context, filter schema.Filter) (*schema.MutationResult, error) {
+func (c *Client) Delete(ctx context.Context, args schema.Args) (*schema.MutationResult, error) {
 	txn := c.d.NewTxn()
 	defer txn.Discard(ctx)
 
-	vq := query.BuildVarQuery(filter)
+	vq := query.BuildVarQuery(*args.Filter)
 
 	mu := &api.Mutation{}
 	dgo.DeleteEdges(mu, "uid(node)", "*")

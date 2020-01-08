@@ -12,9 +12,9 @@ var nodeArgs = map[string]struct{}{
 	"order":  struct{}{},
 }
 
-func parseQueryArgs(defs ast.VariableDefinitionList, args Node) (*QueryArgs, error) {
+func parseArgs(defs ast.VariableDefinitionList, args Node) (*Args, error) {
 	var err error
-	qa := QueryArgs{}
+	qa := Args{}
 
 	for _, def := range defs {
 		arg, ok := args[def.Variable]
@@ -49,6 +49,18 @@ func parseQueryArgs(defs ast.VariableDefinitionList, args Node) (*QueryArgs, err
 				return nil, errors.New("could not cast offset")
 			}
 			qa.Offset = &offset
+		case "nodes":
+			nodes, ok := arg.([]Node)
+			if !ok {
+				return nil, errors.New("could not cast nodes")
+			}
+			qa.Nodes = nodes
+		case "patch":
+			node, ok := arg.(Node)
+			if !ok {
+				return nil, errors.New("could not cast patch")
+			}
+			qa.Patch = &node
 		default:
 			return nil, fmt.Errorf("illegal argument name: %s", def.Variable)
 		}

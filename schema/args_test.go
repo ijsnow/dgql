@@ -29,7 +29,7 @@ func TestParseArgs(t *testing.T) {
 	tests := []struct {
 		q    string
 		args Node
-		want QueryArgs
+		want Args
 	}{
 		{
 			q: `query QueryNodes($filter: Filter, $order: Order, $first: Int, $offset: Int) {
@@ -54,7 +54,7 @@ func TestParseArgs(t *testing.T) {
 				"first":  20,
 				"offset": 20,
 			},
-			want: QueryArgs{
+			want: Args{
 				Filter: &Filter{
 					UIDs: toUIDSlcPtr([]string{"0x1", "0x2"}),
 					Term: &TermFilter{
@@ -85,7 +85,7 @@ func TestParseArgs(t *testing.T) {
 			continue
 		}
 
-		got, err := parseQueryArgs(doc.Operations[0].VariableDefinitions, tc.args)
+		got, err := parseArgs(doc.Operations[0].VariableDefinitions, tc.args)
 		if err != nil {
 			t.Error(err)
 			continue

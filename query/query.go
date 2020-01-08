@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/vektah/gqlparser/ast"
-	"github.com/vektah/gqlparser/parser"
 	"gitlab.com/jago-eng/dgql/schema"
 )
 
@@ -19,22 +18,12 @@ func (q Query) String() string {
 
 type QueryVars map[string]interface{}
 
-func FromSource(in string, args schema.QueryArgs) (Query, error) {
-	source := ast.Source{
-		Name:  "query.graphql",
-		Input: in,
-	}
-
-	doc, err := parser.ParseQuery(&source)
-	if err != nil {
-		return "", err
-	}
-
+func FromSource(doc *ast.QueryDocument, args schema.Args) (Query, error) {
 	q, errr := write(doc, args)
 	return Query(q), errr
 }
 
-func write(doc *ast.QueryDocument, args schema.QueryArgs) (string, error) {
+func write(doc *ast.QueryDocument, args schema.Args) (string, error) {
 	var sb strings.Builder
 	qb := queryBuilder{&sb, 0, args}
 
@@ -82,7 +71,7 @@ func isSpecial(field string) bool {
 type queryBuilder struct {
 	sb     *strings.Builder
 	levels int
-	args   schema.QueryArgs
+	args   schema.Args
 }
 
 func (qb *queryBuilder) write(s string) { qb.sb.WriteString(s) }
@@ -121,7 +110,7 @@ func (qb *queryBuilder) writeOuterMostSelectionSet(sset ast.SelectionSet) error 
 	for _, selection := range sset {
 		if field, ok := selection.(*ast.Field); ok {
 			qb.writeField(field)
-			err := qb.writeQueryArgs(field.SelectionSet)
+			err := qb.writeArgs(field.SelectionSet)
 			if err != nil {
 				return err
 			}
@@ -188,7 +177,7 @@ func (qb *queryBuilder) writeFilters(filter schema.Filter) {
 	}
 }
 
-func (qb *queryBuilder) writeQueryArgs(sset ast.SelectionSet) error {
+func (qb *queryBuilder) writeArgs(sset ast.SelectionSet) error {
 	hasWritten := false
 
 	qb.write("(func: ")

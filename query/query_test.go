@@ -3,6 +3,8 @@ package query
 import (
 	"testing"
 
+	"github.com/vektah/gqlparser/ast"
+	"github.com/vektah/gqlparser/parser"
 	"gitlab.com/jago-eng/dgql/schema"
 )
 
@@ -26,7 +28,7 @@ func TestFromSource(t *testing.T) {
 	tests := []struct {
 		q    string
 		want string
-		args schema.QueryArgs
+		args schema.Args
 	}{
 		{
 			q: `{
@@ -51,7 +53,7 @@ func TestFromSource(t *testing.T) {
 		}
 	}
 }`,
-			args: schema.QueryArgs{},
+			args: schema.Args{},
 		},
 		{
 			q: `query QueryNodes($filter: Filter) {
@@ -66,7 +68,7 @@ func TestFromSource(t *testing.T) {
 		name
 	}
 }`,
-			args: schema.QueryArgs{
+			args: schema.Args{
 				Filter: &schema.Filter{
 					UIDs: toUIDSlcPtr([]string{"0x1", "0x2"}),
 				},
@@ -85,7 +87,7 @@ func TestFromSource(t *testing.T) {
 		name
 	}
 }`,
-			args: schema.QueryArgs{
+			args: schema.Args{
 				Filter: &schema.Filter{
 					Term: &schema.TermFilter{
 						Name: "name",
@@ -107,7 +109,7 @@ func TestFromSource(t *testing.T) {
 		name
 	}
 }`,
-			args: schema.QueryArgs{
+			args: schema.Args{
 				Filter: &schema.Filter{
 					Term: &schema.TermFilter{
 						Name: "name",
@@ -129,7 +131,7 @@ func TestFromSource(t *testing.T) {
 		name
 	}
 }`,
-			args: schema.QueryArgs{
+			args: schema.Args{
 				First:  intPtr(20),
 				Offset: intPtr(20),
 			},
@@ -147,7 +149,7 @@ func TestFromSource(t *testing.T) {
 		name
 	}
 }`,
-			args: schema.QueryArgs{
+			args: schema.Args{
 				Order: &schema.Order{
 					Asc: strPtr("name"),
 				},
@@ -166,7 +168,7 @@ func TestFromSource(t *testing.T) {
 		name
 	}
 }`,
-			args: schema.QueryArgs{
+			args: schema.Args{
 				Order: &schema.Order{
 					Desc: strPtr("name"),
 				},
@@ -175,7 +177,11 @@ func TestFromSource(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		got, err := FromSource(tc.q, tc.args)
+		doc, _ := parser.ParseQuery(&ast.Source{
+			Name:  "askdfj",
+			Input: tc.q,
+		})
+		got, err := FromSource(doc, tc.args)
 		if err != nil {
 			t.Error(err)
 			continue
