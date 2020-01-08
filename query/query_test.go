@@ -5,7 +5,7 @@ import (
 
 	"github.com/vektah/gqlparser/ast"
 	"github.com/vektah/gqlparser/parser"
-	"github.com/ijsnow/dgql/dgql/schema"
+	"github.com/ijsnow/dgql/schema"
 )
 
 func toUIDSlcPtr(v []string) *[]schema.UID {

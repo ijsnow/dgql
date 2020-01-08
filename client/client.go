@@ -7,9 +7,9 @@ import (
 
 	"github.com/dgraph-io/dgo/v2"
 	"github.com/dgraph-io/dgo/v2/protos/api"
+	"github.com/ijsnow/dgql/query"
+	"github.com/ijsnow/dgql/schema"
 	"github.com/vektah/gqlparser/ast"
-	"github.com/ijsnow/dgql/dgql/query"
-	"github.com/ijsnow/dgql/dgql/schema"
 	"google.golang.org/grpc"
 )
 

@@ -3,9 +3,9 @@ package dgql
 import (
 	"context"
 
+	"github.com/ijsnow/dgql/client"
+	"github.com/ijsnow/dgql/schema"
 	"github.com/vektah/gqlparser/ast"
-	"github.com/ijsnow/dgql/dgql/client"
-	"github.com/ijsnow/dgql/dgql/schema"
 )
 
 type Schema struct {

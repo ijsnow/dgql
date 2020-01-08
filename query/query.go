@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/vektah/gqlparser/ast"
-	"github.com/ijsnow/dgql/dgql/schema"
+	"github.com/ijsnow/dgql/schema"
 )
 
 type Query string
