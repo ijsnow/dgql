@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/ijsnow/dgql/dgql"
-	"github.com/ijsnow/dgql/dgql/client"
-	"github.com/ijsnow/dgql/dgql/schema"
+	"github.com/ijsnow/dgql"
+	"github.com/ijsnow/dgql/client"
+	"github.com/ijsnow/dgql/schema"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -16,6 +16,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	s, err := dgql.NewSchema(ctx, client.ClientOptions{"play.dgraph.io"})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	var args schema.ExecutionArgs
@@ -43,6 +44,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandlerFunc(handler)
+	http.HandleFunc("/graph", handler)
 	log.Fatal(http.ListenAndServe(":3333", nil))
 }
